@@ -8,6 +8,11 @@ import {
   DialogTitle,
   DialogContent,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  type SelectChangeEvent,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Pod } from '../../types';
@@ -21,7 +26,11 @@ interface TerminalDialogProps {
   open: boolean;
   onClose: () => void;
   pod: Pod | null;
+  availablePods: Pod[];
+  selectedPodName: string;
+  isExecuting: boolean;
   onExecuteCommand: (command: string) => Promise<void>;
+  onChangePod: (podName: string) => void;
   commandHistory: CommandHistoryItem[];
 }
 
@@ -29,7 +38,11 @@ const TerminalDialog: React.FC<TerminalDialogProps> = ({
   open,
   onClose,
   pod,
+  availablePods,
+  selectedPodName,
+  isExecuting,
   onExecuteCommand,
+  onChangePod,
   commandHistory,
 }) => {
   const [command, setCommand] = useState<string>('');
@@ -47,17 +60,21 @@ const TerminalDialog: React.FC<TerminalDialogProps> = ({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && !isExecuting) {
       event.preventDefault();
       handleExecuteCommand();
     }
   };
 
   const handleExecuteCommand = async () => {
-    if (!command.trim()) return;
-    
+    if (!command.trim() || isExecuting) return;
+
     await onExecuteCommand(command);
     setCommand('');
+  };
+
+  const handlePodChange = (event: SelectChangeEvent<string>) => {
+    onChangePod(event.target.value);
   };
 
   return (
@@ -81,9 +98,30 @@ const TerminalDialog: React.FC<TerminalDialogProps> = ({
         alignItems: 'center',
         p: 2
       }}>
-        <Typography variant="h6">
-          Run Terminal Command {pod && `in ${getAppName(pod)}`}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+          <Typography variant="h6" sx={{ mr: 2 }}>
+            Run Terminal Command
+          </Typography>
+          <FormControl 
+            size="small" 
+            sx={{ minWidth: 200 }}
+          >
+            <InputLabel id="pod-select-label">Select Pod</InputLabel>
+            <Select
+              labelId="pod-select-label"
+              value={selectedPodName}
+              onChange={handlePodChange}
+              label="Select Pod"
+              disabled={isExecuting}
+            >
+              {availablePods.map((pod) => (
+                <MenuItem key={pod.metadata.name} value={pod.metadata.name}>
+                  {pod.metadata.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
         <IconButton 
           edge="end" 
           color="inherit" 
@@ -151,6 +189,7 @@ const TerminalDialog: React.FC<TerminalDialogProps> = ({
             onKeyDown={handleKeyDown}
             placeholder="Enter command to execute"
             size="small"
+            disabled={isExecuting}
             sx={{ 
               mr: 1,
               '& .MuiOutlinedInput-root': {
@@ -180,9 +219,9 @@ const TerminalDialog: React.FC<TerminalDialogProps> = ({
             variant="contained" 
             color="primary" 
             onClick={handleExecuteCommand}
-            disabled={!command.trim()}
+            disabled={!command.trim() || isExecuting}
           >
-            Execute
+            {isExecuting ? 'Executing...' : 'Execute'}
           </Button>
         </Box>
       </DialogContent>

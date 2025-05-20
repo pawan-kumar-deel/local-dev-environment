@@ -40,21 +40,67 @@ export const getPodDetails = async (namespace: string, podName: string): Promise
   }
 };
 
+export interface PortAvailabilityResult {
+  available: boolean;
+  processInfo?: {
+    pid: string;
+    command: string;
+    user: string;
+  };
+}
+
+export const checkPortAvailability = async (localPort: number): Promise<PortAvailabilityResult> => {
+  try {
+    const response = await api.get<PortAvailabilityResult>(`/api/portforward/check/${localPort}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error checking port availability:', error);
+    // If there's an error, assume the port is not available
+    return { available: false };
+  }
+};
+
+export interface PortForwardingResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+  processInfo?: {
+    pid: string;
+    command: string;
+    user: string;
+  };
+}
+
 export const startPortForwarding = async (
   namespace: string,
   podName: string,
   podPort: number,
-  localPort: number
-): Promise<boolean> => {
+  localPort: number,
+  force: boolean = false
+): Promise<PortForwardingResult> => {
   try {
-    await api.post(`/api/pods/${namespace}/${podName}/portforward`, {
+    const response = await api.post(`/api/pods/${namespace}/${podName}/portforward`, {
       podPort,
       localPort,
+      force
     });
-    return true;
+    return {
+      success: true,
+      message: response.data.message
+    };
   } catch (error) {
     console.error('Error starting port forwarding:', error);
-    return false;
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        success: false,
+        error: error.response.data.error,
+        processInfo: error.response.data.processInfo
+      };
+    }
+    return {
+      success: false,
+      error: 'Failed to start port forwarding'
+    };
   }
 };
 
@@ -87,7 +133,8 @@ export const getAppSettings = async (): Promise<AppSettings> => {
     // Return default settings if there's an error
     return {
       filterPreference: 'Services with exposed ports',
-      namespace: ''
+      namespace: '',
+      refreshInterval: '15s'
     };
   }
 };
@@ -109,17 +156,19 @@ interface ExecCommandResponse {
   podName: string;
   namespace: string;
   command: string;
+  containerName?: string;
 }
 
 export const execCommand = async (
   namespace: string,
   podName: string,
-  command: string
+  command: string,
+  containerName?: string
 ): Promise<ExecCommandResponse> => {
   try {
     const response = await api.post<ExecCommandResponse>(
       `/api/pods/${namespace}/${podName}/exec`,
-      { command }
+      { command, containerName }
     );
     return response.data;
   } catch (error) {
@@ -130,7 +179,8 @@ export const execCommand = async (
         error: error.response.data.error || 'Failed to execute command',
         podName,
         namespace,
-        command
+        command,
+        containerName
       };
     }
     return {
@@ -138,7 +188,8 @@ export const execCommand = async (
       error: 'Connection error. Please check if the backend server is running.',
       podName,
       namespace,
-      command
+      command,
+      containerName
     };
   }
 };

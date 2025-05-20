@@ -10,12 +10,16 @@ interface CommandHistoryItem {
 interface UseTerminalCommandsResult {
   terminalDialogOpen: boolean;
   currentPod: Pod | null;
+  selectedPodName: string;
+  availablePods: Pod[];
+  isExecuting: boolean;
   terminalCommand: string;
   terminalHistory: CommandHistoryItem[];
-  openTerminal: (pod: Pod) => void;
+  openTerminal: (pod: Pod, allPodsInService: Pod[]) => void;
   closeTerminal: () => void;
   setTerminalCommand: (command: string) => void;
   executeCommand: (command: string) => Promise<void>;
+  changePod: (podName: string) => void;
 }
 
 /**
@@ -25,26 +29,50 @@ interface UseTerminalCommandsResult {
 export const useTerminalCommands = (): UseTerminalCommandsResult => {
   const [terminalDialogOpen, setTerminalDialogOpen] = useState<boolean>(false);
   const [currentPod, setCurrentPod] = useState<Pod | null>(null);
+  const [availablePods, setAvailablePods] = useState<Pod[]>([]);
+  const [selectedPodName, setSelectedPodName] = useState<string>('');
+  const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const [terminalCommand, setTerminalCommand] = useState<string>('');
   const [terminalHistory, setTerminalHistory] = useState<CommandHistoryItem[]>([]);
 
-  const openTerminal = (pod: Pod) => {
+  // Helper function to find a pod by name
+  const findPodByName = (podName: string): Pod | undefined => {
+    return availablePods.find(pod => pod.metadata.name === podName);
+  };
+
+  const openTerminal = (pod: Pod, allPodsInService: Pod[]) => {
     setTerminalDialogOpen(true);
     setCurrentPod(pod);
+    setAvailablePods(allPodsInService);
+    setSelectedPodName(pod.metadata.name);
     setTerminalCommand('');
     setTerminalHistory([]);
+    setIsExecuting(false);
   };
 
   const closeTerminal = () => {
     setTerminalDialogOpen(false);
     setCurrentPod(null);
+    setAvailablePods([]);
+    setSelectedPodName('');
     setTerminalCommand('');
+    setIsExecuting(false);
+  };
+
+  const changePod = (podName: string) => {
+    const newPod = findPodByName(podName);
+    if (newPod) {
+      setCurrentPod(newPod);
+      setSelectedPodName(podName);
+      setTerminalHistory([]); // Clear history when pod changes
+    }
   };
 
   const executeCommand = async (command: string) => {
-    if (!currentPod || !command.trim()) return;
+    if (!currentPod || !command.trim() || isExecuting) return;
 
     const trimmedCommand = command.trim();
+    setIsExecuting(true);
 
     // Add the command to history with a "pending" output
     setTerminalHistory(prev => [
@@ -53,11 +81,17 @@ export const useTerminalCommands = (): UseTerminalCommandsResult => {
     ]);
 
     try {
+      // Get the first container name from the pod
+      const containerName = currentPod.spec.containers.length > 0 
+        ? currentPod.spec.containers[0].name 
+        : undefined;
+
       // Execute the command using the API
       const result = await execCommandWithMutate(
         currentPod.metadata.namespace,
         currentPod.metadata.name,
-        trimmedCommand
+        trimmedCommand,
+        containerName
       );
 
       // Update the command output in history
@@ -93,17 +127,23 @@ export const useTerminalCommands = (): UseTerminalCommandsResult => {
 
         return newHistory;
       });
+    } finally {
+      setIsExecuting(false);
     }
   };
 
   return {
     terminalDialogOpen,
     currentPod,
+    selectedPodName,
+    availablePods,
+    isExecuting,
     terminalCommand,
     terminalHistory,
     openTerminal,
     closeTerminal,
     setTerminalCommand,
-    executeCommand
+    executeCommand,
+    changePod
   };
 };

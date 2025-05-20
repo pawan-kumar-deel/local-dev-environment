@@ -2,11 +2,11 @@
   "name": "local-dev-environment",
   "version": "1.0.0",
   "description": "Deel LDE management dashboard with backend API and React UI",
-  "main": "src/index.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "test": "node src/test.js",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest",
     "ui:dev": "cd ui && npm run dev",
     "ui:build": "cd ui && npm run build",
     "ui:preview": "cd ui && npm run preview",
@@ -20,7 +20,8 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.22",
-    "concurrently": "^8.0.1"
+    "concurrently": "^8.0.1",
+    "jest": "^29.5.0"
   },
   "private": true
 }

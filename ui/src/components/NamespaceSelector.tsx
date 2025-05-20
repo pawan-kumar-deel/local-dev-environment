@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Box, Typography, Divider } from '@mui/material';
-import { useAppSettings } from '../services/hooks';
+import { TextField, Button, Box, Typography, Divider, FormControl, InputLabel, Select, MenuItem, type SelectChangeEvent } from '@mui/material';
+import { useAppSettings, updateAppSettingsWithMutate } from '../services/hooks';
 
 interface NamespaceSelectorProps {
   onNamespaceChange: (namespace: string) => void;
 }
 
 const NamespaceSelector: React.FC<NamespaceSelectorProps> = ({ onNamespaceChange }) => {
-  const { settings } = useAppSettings();
+  const { settings, mutate: refreshSettings } = useAppSettings();
   const [namespace, setNamespace] = useState<string>('');
   const [inputValue, setInputValue] = useState<string>('');
+  const [refreshInterval, setRefreshInterval] = useState<string>("15s");
 
   useEffect(() => {
     // Update namespace and input value when settings are loaded
@@ -17,7 +18,22 @@ const NamespaceSelector: React.FC<NamespaceSelectorProps> = ({ onNamespaceChange
       setNamespace(settings.namespace);
       setInputValue(settings.namespace);
     }
+    if (settings?.refreshInterval) {
+      setRefreshInterval(settings.refreshInterval);
+    }
   }, [settings]);
+
+  const handleRefreshIntervalChange = async (event: SelectChangeEvent) => {
+    const newRefreshInterval = event.target.value;
+    setRefreshInterval(newRefreshInterval);
+
+    // Save the refresh interval to settings
+    try {
+      await updateAppSettingsWithMutate({ refreshInterval: newRefreshInterval }, refreshSettings);
+    } catch (err) {
+      console.error('Failed to update refresh interval:', err);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +58,21 @@ const NamespaceSelector: React.FC<NamespaceSelectorProps> = ({ onNamespaceChange
           size="small"
           fullWidth
         />
+        <FormControl fullWidth size="small">
+          <InputLabel id="refresh-interval-label">Refresh interval</InputLabel>
+          <Select
+            labelId="refresh-interval-label"
+            value={refreshInterval}
+            onChange={handleRefreshIntervalChange}
+            label="Refresh interval"
+          >
+            <MenuItem value="5s">5s</MenuItem>
+            <MenuItem value="10s">10s</MenuItem>
+            <MenuItem value="15s">15s</MenuItem>
+            <MenuItem value="30s">30s</MenuItem>
+            <MenuItem value="1m">1m</MenuItem>
+          </Select>
+        </FormControl>
         <Button 
           type="submit" 
           variant="contained" 

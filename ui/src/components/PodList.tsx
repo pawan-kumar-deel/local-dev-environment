@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Typography,
   Box,
@@ -13,8 +13,12 @@ import {
   IconButton,
   Tooltip,
   Grid,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
   type SelectChangeEvent,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import type { Pod } from '../types';
 import { 
@@ -55,6 +59,7 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
     handleInputChange, 
     handlePortForward: startPortForward, 
     handleStopPortForward: stopPortForward, 
+    handleForcePortForward: forcePortForward,
     clearActionStatus,
     getPortForwardConfig
   } = usePortForwarding(configurations, namespace, refreshConfigurations);
@@ -62,12 +67,16 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
   const {
     terminalDialogOpen,
     currentPod: terminalPod,
+    selectedPodName,
+    availablePods,
+    isExecuting,
     terminalCommand,
     terminalHistory,
     openTerminal,
     closeTerminal,
     setTerminalCommand,
-    executeCommand
+    executeCommand,
+    changePod
   } = useTerminalCommands();
 
   const {
@@ -89,6 +98,42 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
     handlePrintEnvClose,
     handleSearchChange: handlePrintEnvSearchChange
   } = usePrintEnv();
+
+  // Convert refresh interval string to milliseconds
+  const getRefreshIntervalMs = (interval: string): number => {
+    if (interval === '1m') return 60 * 1000;
+    const seconds = parseInt(interval.replace('s', ''));
+    return seconds * 1000;
+  };
+
+  // Set up auto-refresh interval
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    // Set up new interval if we have a valid refresh interval
+    if (settings?.refreshInterval) {
+      const intervalMs = getRefreshIntervalMs(settings.refreshInterval);
+      intervalRef.current = setInterval(() => {
+        console.log(`Auto-refreshing data (interval: ${settings.refreshInterval})`);
+        refreshPods();
+        refreshConfigurations();
+      }, intervalMs);
+    }
+
+    // Clean up on unmount
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [settings?.refreshInterval, refreshPods, refreshConfigurations]);
 
   // Handle filter preference change
   const handleFilterChange = async (event: SelectChangeEvent<string>) => {
@@ -116,6 +161,24 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
     clearActionStatus(podName);
   };
 
+  // Separate pods into active forwards and available
+  const separatePods = () => {
+    if (!filteredPods) return { activeForwards: [], available: [] };
+
+    const activeForwards: Pod[] = [];
+    const available: Pod[] = [];
+
+    filteredPods.forEach(pod => {
+      if (getPortForwardConfig(pod.metadata.name)) {
+        activeForwards.push(pod);
+      } else {
+        available.push(pod);
+      }
+    });
+
+    return { activeForwards, available };
+  };
+
   // Render main content based on loading/error state
   let mainContent;
 
@@ -138,6 +201,8 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
       </Box>
     );
   } else {
+    const { activeForwards, available } = separatePods();
+
     mainContent = (
       <Card elevation={3} sx={{ width: '100%', border: 'mediumpurple 1px solid' }}>
         <CardContent>
@@ -166,25 +231,97 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
             </Box>
           </Box>
 
-          <Grid container spacing={3}>
-            {filteredPods.map((pod) => (
-              <Grid item xs={12} key={pod.metadata.uid}>
-                <PodCard
-                  pod={pod}
-                  portForwardConfig={getPortForwardConfig(pod.metadata.name)}
-                  actionStatus={actionStatus[pod.metadata.name]}
-                  portInputs={portInputs[pod.metadata.name] || { podPort: '', localPort: '' }}
-                  onPortInputChange={(field, value) => handleInputChange(pod.metadata.name, field, value)}
-                  onPortForward={() => handlePortForward(pod.metadata.name)}
-                  onStopPortForward={() => handleStopPortForward(pod.metadata.name)}
-                  onEnvVarsClick={(e) => handleEnvVarsClick(e, pod)}
-                  onPrintEnvClick={(e) => handlePrintEnvClick(e, pod)}
-                  onTerminalClick={(e) => openTerminal(pod)}
-                  onActionStatusClose={() => handleActionStatusClose(pod.metadata.name)}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          {/* Active Forwards Section */}
+          <Accordion defaultExpanded sx={{ mb: 2 }}>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="active-forwards-content"
+              id="active-forwards-header"
+            >
+              <Typography variant="h6">Active Forwards</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {activeForwards.length > 0 ? (
+                <Grid container spacing={3}>
+                  {activeForwards.map((pod) => (
+                    <Grid item xs={12} key={pod.metadata.uid}>
+                      <PodCard
+                        pod={pod}
+                        portForwardConfig={getPortForwardConfig(pod.metadata.name)}
+                        actionStatus={actionStatus[pod.metadata.name]}
+                        portInputs={portInputs[pod.metadata.name] || { podPort: '', localPort: '' }}
+                        onPortInputChange={(field, value) => handleInputChange(pod.metadata.name, field, value)}
+                        onPortForward={() => handlePortForward(pod.metadata.name)}
+                        onStopPortForward={() => handleStopPortForward(pod.metadata.name)}
+                        onForcePortForward={() => forcePortForward(pod.metadata.name)}
+                        onEnvVarsClick={(e) => handleEnvVarsClick(e, pod)}
+                        onPrintEnvClick={(e) => handlePrintEnvClick(e, pod)}
+                        onTerminalClick={(e) => {
+                          // Find all pods with the same app label
+                          const appLabel = pod.metadata.labels?.app;
+                          const podsInService = appLabel 
+                            ? filteredPods.filter(p => p.metadata.labels?.app === appLabel)
+                            : [pod]; // If no app label, just use this pod
+
+                          openTerminal(pod, podsInService);
+                        }}
+                        onActionStatusClose={() => handleActionStatusClose(pod.metadata.name)}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              ) : (
+                <Box sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="body1">No active forwards</Typography>
+                </Box>
+              )}
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Available Section */}
+          <Accordion defaultExpanded>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="available-content"
+              id="available-header"
+            >
+              <Typography variant="h6">Available</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {available.length > 0 ? (
+                <Grid container spacing={3}>
+                  {available.map((pod) => (
+                      <PodCard
+                        pod={pod}
+                        portForwardConfig={getPortForwardConfig(pod.metadata.name)}
+                        actionStatus={actionStatus[pod.metadata.name]}
+                        portInputs={portInputs[pod.metadata.name] || { podPort: '', localPort: '' }}
+                        onPortInputChange={(field, value) => handleInputChange(pod.metadata.name, field, value)}
+                        onPortForward={() => handlePortForward(pod.metadata.name)}
+                        onStopPortForward={() => handleStopPortForward(pod.metadata.name)}
+                        onForcePortForward={() => forcePortForward(pod.metadata.name)}
+                        onEnvVarsClick={(e) => handleEnvVarsClick(e, pod)}
+                        onPrintEnvClick={(e) => handlePrintEnvClick(e, pod)}
+                        onTerminalClick={(e) => {
+                          // Find all pods with the same app label
+                          const appLabel = pod.metadata.labels?.app;
+                          const podsInService = appLabel 
+                            ? filteredPods.filter(p => p.metadata.labels?.app === appLabel)
+                            : [pod]; // If no app label, just use this pod
+
+                          openTerminal(pod, podsInService);
+                        }}
+                        onActionStatusClose={() => handleActionStatusClose(pod.metadata.name)}
+                      />
+                  ))}
+                </Grid>
+              ) : (
+                <Box sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="body1">No available services</Typography>
+                </Box>
+              )}
+            </AccordionDetails>
+          </Accordion>
         </CardContent>
       </Card>
     );
@@ -209,7 +346,11 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
         open={terminalDialogOpen}
         onClose={closeTerminal}
         pod={terminalPod}
+        availablePods={availablePods}
+        selectedPodName={selectedPodName}
+        isExecuting={isExecuting}
         onExecuteCommand={executeCommand}
+        onChangePod={changePod}
         commandHistory={terminalHistory}
       />
 

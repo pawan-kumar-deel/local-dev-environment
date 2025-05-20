@@ -78,4 +78,5 @@ export interface PortForwardConfig {
 export interface AppSettings {
   filterPreference: "Services with exposed ports" | "All services";
   namespace: string;
+  refreshInterval?: "5s" | "10s" | "15s" | "30s" | "1m";
 }

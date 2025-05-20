@@ -8,7 +8,10 @@ import {
   startPortForwarding,
   stopPortForwarding,
   updateAppSettings,
-  execCommand
+  execCommand,
+  checkPortAvailability,
+  type PortAvailabilityResult,
+  type PortForwardingResult
 } from './api';
 
 // Fetcher function that wraps the API calls
@@ -91,16 +94,24 @@ export function useAppSettings() {
   };
 }
 
+// Function to check port availability (not a hook, but a utility function)
+export async function checkPortAvailabilityWithMutate(
+  localPort: number
+): Promise<PortAvailabilityResult> {
+  return await checkPortAvailability(localPort);
+}
+
 // Function to start port forwarding (not a hook, but a mutation function)
 export async function startPortForwardingWithMutate(
   namespace: string,
   podName: string,
   podPort: number,
   localPort: number,
-  mutateConfigurations: () => Promise<any>
-) {
-  const result = await startPortForwarding(namespace, podName, podPort, localPort);
-  if (result) {
+  mutateConfigurations: () => Promise<any>,
+  force: boolean = false
+): Promise<PortForwardingResult> {
+  const result = await startPortForwarding(namespace, podName, podPort, localPort, force);
+  if (result.success) {
     // Revalidate configurations after successful port forwarding
     await mutateConfigurations();
   }
@@ -135,7 +146,8 @@ export async function updateAppSettingsWithMutate(
 export async function execCommandWithMutate(
   namespace: string,
   podName: string,
-  command: string
+  command: string,
+  containerName?: string
 ) {
-  return await execCommand(namespace, podName, command);
+  return await execCommand(namespace, podName, command, containerName);
 }

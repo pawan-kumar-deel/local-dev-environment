@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import type { Pod, PortForwardConfig } from '../types';
-import { startPortForwardingWithMutate, stopPortForwardingWithMutate } from '../services/hooks';
+import { 
+  startPortForwardingWithMutate, 
+  stopPortForwardingWithMutate,
+  checkPortAvailabilityWithMutate,
+  type PortAvailabilityResult
+} from '../services/hooks';
 
 interface PortInput {
   podPort: string;
@@ -10,6 +15,13 @@ interface PortInput {
 interface ActionStatus {
   success: boolean;
   message: string;
+  isLoading?: boolean;
+  isPortInUse?: boolean;
+  processInfo?: {
+    pid: string;
+    command: string;
+    user: string;
+  };
 }
 
 interface UsePortForwardingResult {
@@ -18,6 +30,7 @@ interface UsePortForwardingResult {
   handleInputChange: (podName: string, field: 'podPort' | 'localPort', value: string) => void;
   handlePortForward: (namespace: string, podName: string) => Promise<void>;
   handleStopPortForward: (podName: string) => Promise<void>;
+  handleForcePortForward: (namespace: string, podName: string) => Promise<void>;
   clearActionStatus: (podName: string) => void;
   getPortForwardConfig: (podName: string) => PortForwardConfig | undefined;
 }
@@ -85,30 +98,135 @@ export const usePortForwarding = (
       return;
     }
 
+    // Set loading state
+    setActionStatus({
+      ...actionStatus,
+      [podName]: { 
+        success: false, 
+        message: 'Checking port availability...', 
+        isLoading: true 
+      }
+    });
+
     try {
-      const success = await startPortForwardingWithMutate(
+      // First check if the port is available
+      const localPort = parseInt(input.localPort);
+      const portCheck = await checkPortAvailabilityWithMutate(localPort);
+
+      if (!portCheck.available) {
+        // Port is in use, show warning
+        setActionStatus({
+          ...actionStatus,
+          [podName]: { 
+            success: false, 
+            message: `Local port ${localPort} is already in use by ${portCheck.processInfo?.command || 'another process'}`, 
+            isLoading: false,
+            isPortInUse: true,
+            processInfo: portCheck.processInfo
+          }
+        });
+        return;
+      }
+
+      // Port is available, proceed with port forwarding
+      const result = await startPortForwardingWithMutate(
         namespace,
         podName,
         parseInt(input.podPort),
-        parseInt(input.localPort),
+        localPort,
         refreshConfigurations
       );
 
-      if (success) {
+      if (result.success) {
         setActionStatus({
           ...actionStatus,
-          [podName]: { success: true, message: 'Port forwarding started successfully' }
+          [podName]: { 
+            success: true, 
+            message: result.message || 'Port forwarding started successfully',
+            isLoading: false
+          }
         });
       } else {
         setActionStatus({
           ...actionStatus,
-          [podName]: { success: false, message: 'Failed to start port forwarding' }
+          [podName]: { 
+            success: false, 
+            message: result.error || 'Failed to start port forwarding',
+            isLoading: false
+          }
         });
       }
     } catch (err) {
       setActionStatus({
         ...actionStatus,
-        [podName]: { success: false, message: 'Error starting port forwarding' }
+        [podName]: { 
+          success: false, 
+          message: err instanceof Error ? err.message : 'Error starting port forwarding',
+          isLoading: false
+        }
+      });
+      console.error(err);
+    }
+  };
+
+  const handleForcePortForward = async (namespace: string, podName: string) => {
+    const input = portInputs[podName];
+    if (!input || !input.podPort || !input.localPort) {
+      setActionStatus({
+        ...actionStatus,
+        [podName]: { success: false, message: 'Please enter both pod port and local port' }
+      });
+      return;
+    }
+
+    // Set loading state
+    setActionStatus({
+      ...actionStatus,
+      [podName]: { 
+        success: false, 
+        message: 'Forcing port forwarding...', 
+        isLoading: true 
+      }
+    });
+
+    try {
+      // Force port forwarding by killing existing process
+      const result = await startPortForwardingWithMutate(
+        namespace,
+        podName,
+        parseInt(input.podPort),
+        parseInt(input.localPort),
+        refreshConfigurations,
+        true // force = true
+      );
+
+      if (result.success) {
+        setActionStatus({
+          ...actionStatus,
+          [podName]: { 
+            success: true, 
+            message: result.message || 'Port forwarding started successfully',
+            isLoading: false
+          }
+        });
+      } else {
+        setActionStatus({
+          ...actionStatus,
+          [podName]: { 
+            success: false, 
+            message: result.error || 'Failed to force port forwarding',
+            isLoading: false
+          }
+        });
+      }
+    } catch (err) {
+      setActionStatus({
+        ...actionStatus,
+        [podName]: { 
+          success: false, 
+          message: err instanceof Error ? err.message : 'Error forcing port forwarding',
+          isLoading: false
+        }
       });
       console.error(err);
     }
@@ -156,6 +274,7 @@ export const usePortForwarding = (
     handleInputChange,
     handlePortForward,
     handleStopPortForward,
+    handleForcePortForward,
     clearActionStatus,
     getPortForwardConfig
   };
