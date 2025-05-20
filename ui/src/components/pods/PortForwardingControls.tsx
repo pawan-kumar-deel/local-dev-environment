@@ -43,7 +43,7 @@ const PortForwardingControls: React.FC<PortForwardingControlsProps> = ({
   onForcePortForward,
 }) => {
   return (
-    <Stack spacing={2}>
+    <Stack spacing={2} flex={1}>
       <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
         <FormControl fullWidth size="small">
           <InputLabel>Source Port</InputLabel>

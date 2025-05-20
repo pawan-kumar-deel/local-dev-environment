@@ -219,7 +219,7 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
                   onChange={handleFilterChange}
                   label="Filter"
                 >
-                  <MenuItem value="Services with exposed ports">Services with exposed ports</MenuItem>
+                  <MenuItem value="Services with listeners">Services with listeners</MenuItem>
                   <MenuItem value="All services">All services</MenuItem>
                 </Select>
               </FormControl>
@@ -244,7 +244,6 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
               {activeForwards.length > 0 ? (
                 <Grid container spacing={3}>
                   {activeForwards.map((pod) => (
-                    <Grid item xs={12} key={pod.metadata.uid}>
                       <PodCard
                         pod={pod}
                         portForwardConfig={getPortForwardConfig(pod.metadata.name)}
@@ -267,7 +266,6 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
                         }}
                         onActionStatusClose={() => handleActionStatusClose(pod.metadata.name)}
                       />
-                    </Grid>
                   ))}
                 </Grid>
               ) : (

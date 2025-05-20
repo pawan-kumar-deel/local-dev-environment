@@ -1,1 +1,37 @@
-[]
+[
+  {
+    "namespace": "dev-m93dxcxsa7",
+    "podName": "backend-main-77f7bf64db-p5j8w",
+    "podPort": 3000,
+    "localPort": 3030,
+    "createdAt": "2025-05-20T20:00:24.763Z"
+  },
+  {
+    "namespace": "dev-m93dxcxsa7",
+    "podName": "admin-7588699df8-d6486",
+    "podPort": 80,
+    "localPort": 3031,
+    "createdAt": "2025-05-20T20:01:42.160Z"
+  },
+  {
+    "namespace": "dev-m93dxcxsa7",
+    "podName": "bank-transfer-5d449d64cd-mprgh",
+    "podPort": 3000,
+    "localPort": 1111,
+    "createdAt": "2025-05-20T20:10:39.828Z"
+  },
+  {
+    "namespace": "dev-m93dxcxsa7",
+    "podName": "benefits-5b4d88bddb-hl4zk",
+    "podPort": 3000,
+    "localPort": 1112,
+    "createdAt": "2025-05-20T20:10:50.399Z"
+  },
+  {
+    "namespace": "dev-m93dxcxsa7",
+    "podName": "cdd-6fc58c79bf-2bhwh",
+    "podPort": 3000,
+    "localPort": 3333,
+    "createdAt": "2025-05-20T20:11:30.654Z"
+  }
+]

@@ -14,7 +14,7 @@ async function loadAppSettings() {
     } catch (error) {
       // File doesn't exist or is invalid, return default settings
       const defaultSettings = {
-        filterPreference: "Services with exposed ports",
+        filterPreference: "Services with listeners",
         namespace: "",
         refreshInterval: "15s"
       };

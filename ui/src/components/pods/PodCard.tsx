@@ -57,14 +57,13 @@ const PodCard: React.FC<PodCardProps> = ({
   onTerminalClick,
   onActionStatusClose,
 }) => {
-  // Helper function to get Datadog link
   const getDatadogLink = (): string => {
     if (!pod.metadata.labels) return '';
 
-    // Build tags for Datadog URL
     const tags = Object.entries(pod.metadata.labels)
-      .map(([key, value]) => `${key}:${value}`)
-      .join(',');
+      .filter(([key]) => key.startsWith('tags.datadoghq.com/'))
+      .map(([key, value]) => `${key}:${value}`.replace('tags.datadoghq.com/',''))
+      .join(' ');
 
     return `https://app.datadoghq.eu/logs?query=pod_name:${pod.metadata.name} ${tags}`;
   };
@@ -132,8 +131,7 @@ const PodCard: React.FC<PodCardProps> = ({
         )}
       </CardContent>
 
-      <CardActions sx={{ p: 2, pt: 0 }}>
-        <Grid container spacing={2}>
+      <CardActions sx={{ p: 2, pt: 0, width: '100%' }}>
           <PortForwardingControls
             podPort={portInputs.podPort}
             localPort={portInputs.localPort}
@@ -148,7 +146,6 @@ const PodCard: React.FC<PodCardProps> = ({
             onStopPortForward={onStopPortForward}
             onForcePortForward={onForcePortForward}
           />
-        </Grid>
       </CardActions>
     </Card>
   );

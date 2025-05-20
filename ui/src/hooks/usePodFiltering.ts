@@ -15,7 +15,7 @@ interface UsePodFilteringResult {
  */
 export const usePodFiltering = (
   pods: Pod[] | undefined,
-  initialFilterPreference: AppSettings['filterPreference'] = 'Services with exposed ports'
+  initialFilterPreference: AppSettings['filterPreference'] = 'Services with listeners'
 ): UsePodFilteringResult => {
   const [filteredPods, setFilteredPods] = useState<Pod[]>([]);
   const [filterPreference, setFilterPreference] = useState<AppSettings['filterPreference']>(initialFilterPreference);
@@ -43,7 +43,7 @@ export const usePodFiltering = (
     if (filterPreference === 'All services') {
       setFilteredPods(pods);
     } else {
-      // Filter pods with exposed ports
+      // Filter pods with listeners
       const podsWithExposedPorts = pods.filter(pod => {
         const ports = getExposedPorts(pod);
         return ports.length > 0;

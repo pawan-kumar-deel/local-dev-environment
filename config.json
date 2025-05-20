@@ -1,4 +1,4 @@
 {
-  "filterPreference": "Services with exposed ports",
+  "filterPreference": "Services with listeners",
   "namespace": "dev-m93dxcxsa7"
 }

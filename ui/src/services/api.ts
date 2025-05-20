@@ -25,7 +25,7 @@ export const getPods = async (namespace: string): Promise<Pod[]> => {
     } else {
       // Handle network errors or other unexpected errors
       console.error('Error fetching pods:', error);
-      throw new Error('Connection error. Please check if the backend server is running.');
+      // throw new Error('Connection error. Please check if the backend server is running.');
     }
   }
 };
@@ -132,7 +132,7 @@ export const getAppSettings = async (): Promise<AppSettings> => {
     console.error('Error fetching application settings:', error);
     // Return default settings if there's an error
     return {
-      filterPreference: 'Services with exposed ports',
+      filterPreference: 'Services with listeners',
       namespace: '',
       refreshInterval: '15s'
     };
