@@ -9,7 +9,7 @@ const DRAWER_WIDTH = 240;
 
 const Dashboard: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
-  const { settings, mutate: refreshSettings } = useAppSettings();
+  const { settings, mutate: refreshSettings, isLoading } = useAppSettings();
   const [namespace, setNamespace] = useState<string>('');
 
   // Set namespace from settings when they load
@@ -20,6 +20,9 @@ const Dashboard: React.FC = () => {
   }, [settings]);
 
   const handleNamespaceChange = async (newNamespace: string) => {
+    if (isLoading){
+      return;
+    }
     setNamespace(newNamespace);
 
     // Save the namespace to settings

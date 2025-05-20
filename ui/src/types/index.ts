@@ -41,6 +41,25 @@ export interface Pod {
       type: string;
       status: string;
     }[];
+    containerStatuses?: {
+      name: string;
+      ready: boolean;
+      restartCount: number;
+      state: {
+        running?: {
+          startedAt: string;
+        };
+        waiting?: {
+          reason: string;
+          message: string;
+        };
+        terminated?: {
+          exitCode: number;
+          reason: string;
+          message: string;
+        };
+      };
+    }[];
   };
 }
 
