@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', width:'100vw', overflow: 'hidden', backgroundColor: '#f5f5f5' }}>
+    <div>
       <CssBaseline />
       <AppBar position="fixed" color="primary" elevation={0} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
         <Toolbar />
         {namespace && <PodList namespace={namespace} />}
       </Box>
-    </Box>
+    </div>
   );
 };
 

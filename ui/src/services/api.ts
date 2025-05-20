@@ -101,3 +101,44 @@ export const updateAppSettings = async (settings: Partial<AppSettings>): Promise
     throw error;
   }
 };
+
+interface ExecCommandResponse {
+  success: boolean;
+  output?: string;
+  error?: string;
+  podName: string;
+  namespace: string;
+  command: string;
+}
+
+export const execCommand = async (
+  namespace: string,
+  podName: string,
+  command: string
+): Promise<ExecCommandResponse> => {
+  try {
+    const response = await api.post<ExecCommandResponse>(
+      `/api/pods/${namespace}/${podName}/exec`,
+      { command }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error executing command in pod:', error);
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        success: false,
+        error: error.response.data.error || 'Failed to execute command',
+        podName,
+        namespace,
+        command
+      };
+    }
+    return {
+      success: false,
+      error: 'Connection error. Please check if the backend server is running.',
+      podName,
+      namespace,
+      command
+    };
+  }
+};

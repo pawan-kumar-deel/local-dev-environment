@@ -152,7 +152,7 @@ async function loadAppSettings() {
         filterPreference: "Services with exposed ports",
         namespace: ""
       };
-      await saveAppSettings(defaultSettings);
+      saveAppSettings(defaultSettings);
       return defaultSettings;
     }
   } catch (error) {
@@ -321,10 +321,41 @@ app.put('/api/settings', async (req, res) => {
       ...(namespace !== undefined && { namespace })
     };
 
-    await saveAppSettings(updatedSettings);
+    saveAppSettings(updatedSettings);
     res.json(updatedSettings);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Execute a command in a pod
+app.post('/api/pods/:namespace/:podName/exec', async (req, res) => {
+  try {
+    const { namespace, podName } = req.params;
+    const { command } = req.body;
+
+    if (!command) {
+      return res.status(400).json({ error: 'Command is required' });
+    }
+
+    // Execute the command in the pod
+    const kubectlCommand = `kubectl exec -n ${namespace} ${podName} -- ${command}`;
+    const output = await executeKubectlCommand(kubectlCommand);
+
+    res.json({ 
+      success: true,
+      output,
+      podName,
+      namespace,
+      command
+    });
+  } catch (error) {
+    console.error(`Error executing command in pod: ${error.message}`);
+    res.status(500).json({ 
+      success: false,
+      error: error.message,
+      command: req.body.command
+    });
   }
 });
 
@@ -339,7 +370,8 @@ app.get('/', (req, res) => {
       { method: 'DELETE', path: '/api/portforward/:localPort', description: 'Stop port forwarding on a local port' },
       { method: 'GET', path: '/api/configurations', description: 'Get all saved port forwarding configurations' },
       { method: 'GET', path: '/api/settings', description: 'Get application settings' },
-      { method: 'PUT', path: '/api/settings', description: 'Update application settings' }
+      { method: 'PUT', path: '/api/settings', description: 'Update application settings' },
+      { method: 'POST', path: '/api/pods/:namespace/:podName/exec', description: 'Execute a command in a pod' }
     ]
   });
 });

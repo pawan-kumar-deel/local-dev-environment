@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Box, Typography, Divider } from '@mui/material';
-import { getSavedNamespace, saveNamespace } from '../services/storage';
+import { useAppSettings } from '../services/hooks';
 
 interface NamespaceSelectorProps {
   onNamespaceChange: (namespace: string) => void;
 }
 
 const NamespaceSelector: React.FC<NamespaceSelectorProps> = ({ onNamespaceChange }) => {
-  const [namespace, setNamespace] = useState<string>(getSavedNamespace());
-  const [inputValue, setInputValue] = useState<string>(namespace);
+  const { settings } = useAppSettings();
+  const [namespace, setNamespace] = useState<string>('');
+  const [inputValue, setInputValue] = useState<string>('');
 
   useEffect(() => {
-    // When component mounts, notify parent of the current namespace
-    onNamespaceChange(namespace);
-  }, []);
+    // Update namespace and input value when settings are loaded
+    if (settings?.namespace) {
+      setNamespace(settings.namespace);
+      setInputValue(settings.namespace);
+    }
+  }, [settings]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
       setNamespace(inputValue);
-      saveNamespace(inputValue);
       onNamespaceChange(inputValue);
     }
   };

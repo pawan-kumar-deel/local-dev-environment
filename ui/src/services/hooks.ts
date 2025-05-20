@@ -7,7 +7,8 @@ import {
   getAppSettings,
   startPortForwarding,
   stopPortForwarding,
-  updateAppSettings
+  updateAppSettings,
+  execCommand
 } from './api';
 
 // Fetcher function that wraps the API calls
@@ -128,4 +129,13 @@ export async function updateAppSettingsWithMutate(
   // Revalidate settings after update
   await mutateSettings();
   return result;
+}
+
+// Function to execute a command in a pod (not a hook, but a mutation function)
+export async function execCommandWithMutate(
+  namespace: string,
+  podName: string,
+  command: string
+) {
+  return await execCommand(namespace, podName, command);
 }
