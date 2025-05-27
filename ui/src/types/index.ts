@@ -70,6 +70,7 @@ export interface PodList {
 export interface PortForwardConfig {
   namespace: string;
   podName: string;
+  serviceName?: string;  // Optional service name for the pod
   podPort: number;
   localPort: number;
   createdAt: string;

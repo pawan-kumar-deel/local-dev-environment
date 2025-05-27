@@ -177,9 +177,10 @@ export function useTemplates() {
 // Function to save a template (not a hook, but a mutation function)
 export async function saveTemplateWithMutate(
   name: string,
-  mutateTemplates: () => Promise<any>
+  mutateTemplates: () => Promise<any>,
+  body: any
 ): Promise<SaveTemplateResult> {
-  const result = await saveTemplate(name);
+  const result = await saveTemplate(name, body);
   if (result.success) {
     // Revalidate templates after successful save
     await mutateTemplates();

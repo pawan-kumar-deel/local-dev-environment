@@ -25,20 +25,30 @@ async function ensureTemplatesDir() {
  * @param {string} templateName - The name of the template
  * @returns {Promise<object>} - Promise that resolves with the saved template
  */
-async function saveTemplate(templateName) {
+async function saveTemplate(templateName, configurations) {
   try {
     await ensureTemplatesDir();
 
     // Get current configurations
-    const configurations = await configService.loadConfigurations();
+    if (!configurations || configurations.length === 0) {
+      // If no configurations are provided, load them from the config service
+      // This allows us to save the current active configurations as a template
+      configurations = await configService.loadConfigurations();
+    }
 
     if (configurations.length === 0) {
       throw new Error('No active port forwarding configurations to save as template');
     }
 
     // Create template object with configurations but without namespace
+    // Prioritize serviceName over podName in templates
     const configurationsWithoutNamespace = configurations.map(config => {
+      // Remove namespace from the configuration
       const { namespace, ...configWithoutNamespace } = config;
+
+      // If we have both serviceName and podName, we can optionally remove podName
+      // since we'll use serviceName to find pods when applying the template
+      // But keeping podName as a fallback might be useful
       return configWithoutNamespace;
     });
 
@@ -113,6 +123,9 @@ async function applyTemplate(templateName, namespace) {
         ...config,
         namespace
       };
+
+      // If the configuration has a serviceName, we'll use that to find pods
+      // when applying configurations. If not, we'll fall back to podName.
       await configService.saveConfiguration(configWithNamespace);
     }
 

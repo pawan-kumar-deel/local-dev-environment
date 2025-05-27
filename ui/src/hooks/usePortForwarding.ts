@@ -60,6 +60,7 @@ export const usePortForwarding = (
     const configMap: Record<string, PortForwardConfig> = {};
     configurations.forEach(config => {
       // Include all configurations, regardless of namespace
+      // Use podName as the key for backward compatibility
       configMap[config.podName] = config;
     });
     setPortForwardConfigs(configMap);

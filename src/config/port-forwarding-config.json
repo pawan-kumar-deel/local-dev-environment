@@ -1,37 +1,37 @@
 [
   {
-    "namespace": "dev-m93dxcxsa7",
     "podName": "nats-0",
     "podPort": 4222,
     "localPort": 4222,
-    "createdAt": "2025-05-27T07:58:07.636Z"
+    "createdAt": "2025-05-27T07:58:07.636Z",
+    "namespace": "dev-m93dxcxsa7"
   },
   {
-    "namespace": "dev-m93dxcxsa7",
     "podName": "backend-main-776f87744f-5fx22",
     "podPort": 3000,
     "localPort": 3000,
-    "createdAt": "2025-05-27T08:05:26.283Z"
+    "createdAt": "2025-05-27T08:05:26.283Z",
+    "namespace": "dev-m93dxcxsa7"
   },
   {
-    "namespace": "dev-m93dxcxsa7",
     "podName": "payroll-processing-api-6c6d467748-gcztr",
     "podPort": 3000,
     "localPort": 4000,
-    "createdAt": "2025-05-27T08:07:52.339Z"
+    "createdAt": "2025-05-27T08:07:52.339Z",
+    "namespace": "dev-m93dxcxsa7"
   },
   {
-    "namespace": "dev-m93dxcxsa7",
     "podName": "payroll-change-logs-6f699c68fc-845wl",
     "podPort": 3000,
     "localPort": 5000,
-    "createdAt": "2025-05-27T08:09:37.087Z"
+    "createdAt": "2025-05-27T08:09:37.087Z",
+    "namespace": "dev-m93dxcxsa7"
   },
   {
-    "namespace": "dev-m93dxcxsa7",
     "podName": "redis-55647d8b99-46hlf",
     "podPort": 6379,
     "localPort": 6379,
-    "createdAt": "2025-05-27T08:10:21.774Z"
+    "createdAt": "2025-05-27T08:10:21.774Z",
+    "namespace": "dev-m93dxcxsa7"
   }
 ]

@@ -1,6 +1,6 @@
 {
-  "name": "pdsh_template_2",
-  "createdAt": "2025-05-27T08:34:08.491Z",
+  "name": "PDSH_without_postgres",
+  "createdAt": "2025-05-27T14:02:14.917Z",
   "configurations": [
     {
       "podName": "nats-0",

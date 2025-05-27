@@ -211,9 +211,9 @@ export interface SaveTemplateResult {
   template?: Template;
 }
 
-export const saveTemplate = async (name: string): Promise<SaveTemplateResult> => {
+export const saveTemplate = async (name: string, body = {}): Promise<SaveTemplateResult> => {
   try {
-    const response = await api.post('/api/templates', { name });
+    const response = await api.post('/api/templates', { name, ...body });
     return {
       success: true,
       message: response.data.message,
@@ -267,6 +267,7 @@ export const applyTemplate = async (name: string): Promise<ApplyTemplateResult> 
 export const deleteTemplate = async (name: string): Promise<boolean> => {
   try {
     await api.delete(`/api/templates/${name}`);
+    window.location.reload(); // Reload the page to reflect changes
     return true;
   } catch (error) {
     console.error('Error deleting template:', error);

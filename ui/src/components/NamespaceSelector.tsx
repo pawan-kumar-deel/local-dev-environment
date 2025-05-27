@@ -3,7 +3,8 @@ import { TextField, Button, Box, Typography, Divider, FormControl, InputLabel, S
 import { useAppSettings, updateAppSettingsWithMutate, useTemplates, useConfigurations, saveTemplateWithMutate, applyTemplateWithMutate } from '../services/hooks';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
-import { getTemplateDownloadUrl } from '../services/api';
+import DeleteIcon from '@mui/icons-material/Delete';
+import {deleteTemplate, getTemplateDownloadUrl} from '../services/api';
 
 interface NamespaceSelectorProps {
   onNamespaceChange: (namespace: string) => void;
@@ -140,7 +141,7 @@ const NamespaceSelector: React.FC<NamespaceSelectorProps> = ({ onNamespaceChange
       const templateName = templateData.name || file.name.replace('.json', '');
 
       // Save the template with the extracted name
-      const result = await saveTemplateWithMutate(templateName, refreshTemplates);
+      const result = await saveTemplateWithMutate(templateName, refreshTemplates, templateData);
 
       if (result.success) {
         // Select the newly uploaded template
@@ -230,8 +231,20 @@ const NamespaceSelector: React.FC<NamespaceSelectorProps> = ({ onNamespaceChange
           </FormControl>
 
           {selectedTemplate ? (
+            <>
+            <Tooltip title="Delete template">
+              <IconButton
+                color="error"
+                component="a"
+                onClick={()=>{setSelectedTemplate(''); deleteTemplate(selectedTemplate)}}
+                download
+                disabled={!selectedTemplate}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Download template">
-              <IconButton 
+              <IconButton
                 color="primary"
                 component="a"
                 href={getTemplateDownloadUrl(selectedTemplate)}
@@ -241,6 +254,7 @@ const NamespaceSelector: React.FC<NamespaceSelectorProps> = ({ onNamespaceChange
                 <DownloadIcon />
               </IconButton>
             </Tooltip>
+            </>
           ) : (
             <Tooltip title="Upload template">
               <IconButton 

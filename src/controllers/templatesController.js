@@ -30,7 +30,7 @@ async function saveTemplate(req, res) {
       return res.status(400).json({ error: 'Template name is required' });
     }
 
-    const template = await templatesService.saveTemplate(name);
+    const template = await templatesService.saveTemplate(name, req.body?.configurations);
     res.json({
       message: `Template '${name}' saved successfully`,
       template

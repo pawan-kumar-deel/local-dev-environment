@@ -21,11 +21,19 @@ async function saveConfiguration(config) {
     }
 
     // Check if configuration already exists
-    const existingIndex = configurations.findIndex(c => 
-      c.namespace === config.namespace && 
-      c.podName === config.podName && 
-      c.podPort === config.podPort
-    );
+    // If serviceName is available, use it as the primary identifier
+    // Otherwise, fall back to podName
+    const existingIndex = configurations.findIndex(c => {
+      if (config.serviceName && c.serviceName) {
+        return c.namespace === config.namespace && 
+               c.serviceName === config.serviceName && 
+               c.podPort === config.podPort;
+      } else {
+        return c.namespace === config.namespace && 
+               c.podName === config.podName && 
+               c.podPort === config.podPort;
+      }
+    });
 
     if (existingIndex >= 0) {
       // Update existing configuration
