@@ -1,0 +1,55 @@
+{
+  "name": "PDSH__without__postgres",
+  "createdAt": "2025-05-27T16:20:25.963Z",
+  "configurations": [
+    {
+      "serviceName": "backend-main",
+      "podName": "backend-main-5bf4f766b9-m6k9q",
+      "podPort": 3000,
+      "localPort": 3000,
+      "createdAt": "2025-05-27T10:39:01.240Z"
+    },
+    {
+      "serviceName": "nats",
+      "podName": "nats-0",
+      "podPort": 4222,
+      "localPort": 4222,
+      "createdAt": "2025-05-27T10:40:38.363Z"
+    },
+    {
+      "serviceName": "nats",
+      "podName": "nats-1",
+      "podPort": 6222,
+      "localPort": 6222,
+      "createdAt": "2025-05-27T10:45:56.028Z"
+    },
+    {
+      "serviceName": "nats",
+      "podName": "nats-2",
+      "podPort": 8222,
+      "localPort": 8222,
+      "createdAt": "2025-05-27T10:46:54.517Z"
+    },
+    {
+      "serviceName": "payroll-processing-api",
+      "podName": "payroll-processing-api-6c6d467748-gcztr",
+      "podPort": 3000,
+      "localPort": 4000,
+      "createdAt": "2025-05-27T10:42:15.831Z"
+    },
+    {
+      "serviceName": "payroll-change-logs",
+      "podName": "payroll-change-logs-6f699c68fc-845wl",
+      "podPort": 3000,
+      "localPort": 5000,
+      "createdAt": "2025-05-27T10:42:41.986Z"
+    },
+    {
+      "serviceName": "redis",
+      "podName": "redis-55647d8b99-46hlf",
+      "podPort": 6379,
+      "localPort": 6379,
+      "createdAt": "2025-05-27T10:43:30.302Z"
+    }
+  ]
+}

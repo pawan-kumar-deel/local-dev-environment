@@ -1,23 +1,24 @@
 import useSWR from 'swr';
-import type { Pod, PortForwardConfig, AppSettings, Template } from '../types';
+import type {AppSettings, Pod, PortForwardConfig, Template} from '../types';
 import {
-  getPods,
-  getPodDetails,
-  getConfigurations,
-  getAppSettings,
-  startPortForwarding,
-  stopPortForwarding,
-  updateAppSettings,
-  execCommand,
-  checkPortAvailability,
-  getTemplates,
-  saveTemplate,
   applyTemplate,
+  type ApplyTemplateResult,
+  checkPortAvailability,
   deleteTemplate,
+  execCommand,
+  getAppSettings,
+  getConfigurations,
+  getPodDetails,
+  getPods,
+  getProfiles,
+  getTemplates,
   type PortAvailabilityResult,
   type PortForwardingResult,
+  saveTemplate,
   type SaveTemplateResult,
-  type ApplyTemplateResult
+  startPortForwarding,
+  stopPortForwarding,
+  updateAppSettings
 } from './api';
 
 // Fetcher function that wraps the API calls
@@ -214,4 +215,24 @@ export async function deleteTemplateWithMutate(
     await mutateTemplates();
   }
   return result;
+}
+
+export async function getProfilesWithMutate(): Promise<any[]> {
+  try {
+    return await getProfiles();
+  } catch (error) {
+    console.error('Error fetching profiles:', error);
+    return [];
+  }
+}
+
+export function useProfiles() {
+  const { data, error, isLoading, mutate } = useSWR('profiles', getProfilesWithMutate);
+
+  return {
+    profiles: data as any[] | undefined,
+    isLoading,
+    isError: error,
+    mutate
+  };
 }

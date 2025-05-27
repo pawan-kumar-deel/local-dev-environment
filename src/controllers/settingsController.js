@@ -22,8 +22,7 @@ async function getSettings(req, res) {
  */
 async function updateSettings(req, res) {
   try {
-    const { filterPreference, namespace } = req.body;
-    const updatedSettings = await settingsService.updateAppSettings({ filterPreference, namespace });
+    const updatedSettings = await settingsService.updateAppSettings(req.body);
     res.json(updatedSettings);
   } catch (error) {
     console.error(`Error updating settings: ${error.message || error}`);
