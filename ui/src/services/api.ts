@@ -1,7 +1,7 @@
 import axios from 'axios';
-import type {Pod, PodList, PortForwardConfig, AppSettings} from '../types';
+import type {Pod, PodList, PortForwardConfig, AppSettings, Template} from '../types';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://localhost:884';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -192,4 +192,94 @@ export const execCommand = async (
       containerName
     };
   }
+};
+
+export const getTemplates = async (): Promise<Template[]> => {
+  try {
+    const response = await api.get<Template[]>('/api/templates');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching templates:', error);
+    return [];
+  }
+};
+
+export interface SaveTemplateResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+  template?: Template;
+}
+
+export const saveTemplate = async (name: string, body = {}): Promise<SaveTemplateResult> => {
+  try {
+    const response = await api.post('/api/templates', { name, ...body });
+    return {
+      success: true,
+      message: response.data.message,
+      template: response.data.template
+    };
+  } catch (error) {
+    console.error('Error saving template:', error);
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        success: false,
+        error: error.response.data.error || 'Failed to save template'
+      };
+    }
+    return {
+      success: false,
+      error: 'Connection error. Please check if the backend server is running.'
+    };
+  }
+};
+
+export interface ApplyTemplateResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+  template?: Template;
+}
+
+export const applyTemplate = async (name: string): Promise<ApplyTemplateResult> => {
+  try {
+    const response = await api.post(`/api/templates/${name}/apply`);
+    return {
+      success: true,
+      message: response.data.message,
+      template: response.data.template
+    };
+  } catch (error) {
+    console.error('Error applying template:', error);
+    if (axios.isAxiosError(error) && error.response) {
+      return {
+        success: false,
+        error: error.response.data.error || 'Failed to apply template'
+      };
+    }
+    return {
+      success: false,
+      error: 'Connection error. Please check if the backend server is running.'
+    };
+  }
+};
+
+export const deleteTemplate = async (name: string): Promise<boolean> => {
+  try {
+    await api.delete(`/api/templates/${name}`);
+    window.location.reload(); // Reload the page to reflect changes
+    return true;
+  } catch (error) {
+    console.error('Error deleting template:', error);
+    return false;
+  }
+};
+
+/**
+ * Get the download URL for a template
+ * @param name - The name of the template to download
+ * @returns The URL to download the template
+ */
+export const getTemplateDownloadUrl = (name: string): string => {
+  return `${API_URL}/api/templates/${name}/download`;
 };

@@ -41,6 +41,7 @@ interface PodCardProps {
   onPrintEnvClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onTerminalClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onActionStatusClose: () => void;
+  currentNamespace?: string;
 }
 
 const PodCard: React.FC<PodCardProps> = ({
@@ -56,6 +57,7 @@ const PodCard: React.FC<PodCardProps> = ({
   onPrintEnvClick,
   onTerminalClick,
   onActionStatusClose,
+  currentNamespace,
 }) => {
   const getDatadogLink = (): string => {
     if (!pod.metadata.labels) return '';
@@ -106,6 +108,9 @@ const PodCard: React.FC<PodCardProps> = ({
             <Typography variant="body2">
               <strong>Active Port Forwarding:</strong> {portForwardConfig.podPort} → localhost:
               {portForwardConfig.localPort}
+              {currentNamespace && portForwardConfig.namespace !== currentNamespace && (
+                <span> <strong>({portForwardConfig.namespace || 'giger'})</strong></span>
+              )}
             </Typography>
             <Typography variant="body2">
               <strong>URL:</strong>{' '}

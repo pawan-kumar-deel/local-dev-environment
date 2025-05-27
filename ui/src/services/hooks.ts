@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import type { Pod, PortForwardConfig, AppSettings } from '../types';
+import type { Pod, PortForwardConfig, AppSettings, Template } from '../types';
 import {
   getPods,
   getPodDetails,
@@ -10,8 +10,14 @@ import {
   updateAppSettings,
   execCommand,
   checkPortAvailability,
+  getTemplates,
+  saveTemplate,
+  applyTemplate,
+  deleteTemplate,
   type PortAvailabilityResult,
-  type PortForwardingResult
+  type PortForwardingResult,
+  type SaveTemplateResult,
+  type ApplyTemplateResult
 } from './api';
 
 // Fetcher function that wraps the API calls
@@ -36,6 +42,10 @@ const fetcher = async (url: string) => {
 
   if (url === 'settings') {
     return getAppSettings();
+  }
+
+  if (url === 'templates') {
+    return getTemplates();
   }
 
   throw new Error(`Unknown API endpoint: ${url}`);
@@ -150,4 +160,58 @@ export async function execCommandWithMutate(
   containerName?: string
 ) {
   return await execCommand(namespace, podName, command, containerName);
+}
+
+// Hook for fetching templates
+export function useTemplates() {
+  const { data, error, isLoading, mutate } = useSWR('templates', fetcher);
+
+  return {
+    templates: data as Template[] | undefined,
+    isLoading,
+    isError: error,
+    mutate
+  };
+}
+
+// Function to save a template (not a hook, but a mutation function)
+export async function saveTemplateWithMutate(
+  name: string,
+  mutateTemplates: () => Promise<any>,
+  body: any
+): Promise<SaveTemplateResult> {
+  const result = await saveTemplate(name, body);
+  if (result.success) {
+    // Revalidate templates after successful save
+    await mutateTemplates();
+  }
+  return result;
+}
+
+// Function to apply a template (not a hook, but a mutation function)
+export async function applyTemplateWithMutate(
+  name: string,
+  mutateTemplates: () => Promise<any>,
+  mutateConfigurations: () => Promise<any>
+): Promise<ApplyTemplateResult> {
+  const result = await applyTemplate(name);
+  if (result.success) {
+    // Revalidate templates and configurations after successful apply
+    await mutateTemplates();
+    await mutateConfigurations();
+  }
+  return result;
+}
+
+// Function to delete a template (not a hook, but a mutation function)
+export async function deleteTemplateWithMutate(
+  name: string,
+  mutateTemplates: () => Promise<any>
+): Promise<boolean> {
+  const result = await deleteTemplate(name);
+  if (result) {
+    // Revalidate templates after successful delete
+    await mutateTemplates();
+  }
+  return result;
 }

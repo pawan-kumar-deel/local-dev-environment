@@ -70,6 +70,7 @@ export interface PodList {
 export interface PortForwardConfig {
   namespace: string;
   podName: string;
+  serviceName?: string;  // Optional service name for the pod
   podPort: number;
   localPort: number;
   createdAt: string;
@@ -79,4 +80,10 @@ export interface AppSettings {
   filterPreference: "Services with listeners" | "All services";
   namespace: string;
   refreshInterval?: "5s" | "10s" | "15s" | "30s" | "1m";
+}
+
+export interface Template {
+  name: string;
+  createdAt: string;
+  configurations: PortForwardConfig[];
 }
