@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type {Pod, PodList, PortForwardConfig, AppSettings, Template} from '../types';
+import type {AppSettings, Pod, PodList, PortForwardConfig, Template} from '../types';
 
 const API_URL = 'http://localhost:884';
 
@@ -283,3 +283,33 @@ export const deleteTemplate = async (name: string): Promise<boolean> => {
 export const getTemplateDownloadUrl = (name: string): string => {
   return `${API_URL}/api/templates/${name}/download`;
 };
+
+export const getProfiles = async (): Promise<string[]> => {
+  try {
+    const response = await api.get<string[]>('/api/profile');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching profiles:', error);
+    return [];
+  }
+}
+
+export const getCurrentProfile = async (): Promise<string | null> => {
+  try {
+    const response = await api.get<string>('/api/profile/current');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching current profile:', error);
+    return null;
+  }
+}
+
+export const login = async (): Promise<boolean> => {
+  try {
+    const response = await api.get('/api/profile/login');
+    return response.data;
+  } catch (error) {
+    console.error('Error during login:', error);
+    return false;
+  }
+}

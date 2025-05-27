@@ -1,0 +1,13 @@
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import React from 'react';
+import { Typography, Box, TextField, Button, CircularProgress, FormControl, InputLabel, Select, MenuItem, Stack, } from '@mui/material';
+import WarningIcon from '@mui/icons-material/Warning';
+const PortForwardingControls = ({ podPort, localPort, exposedPorts, isForwarding, isLoading, isPortInUse, statusMessage, disabled, onPortInputChange, onPortForward, onStopPortForward, onForcePortForward, }) => {
+    return (_jsxs(Stack, { spacing: 2, flex: 1, children: [_jsxs(Stack, { direction: "row", spacing: 1, sx: { mb: 1 }, children: [_jsxs(FormControl, { fullWidth: true, size: "small", children: [_jsx(InputLabel, { children: "Source Port" }), _jsx(Select, { value: podPort || '', onChange: (e) => onPortInputChange('podPort', e.target.value), label: "Pod Port", disabled: isForwarding || disabled, sx: { minWidth: '150px' }, children: exposedPorts.length > 0 ? (exposedPorts.map((port) => (_jsx(MenuItem, { value: port.toString(), children: port }, port)))) : (_jsx(MenuItem, { value: "", disabled: true, children: "No ports available" })) })] }), _jsx(TextField, { label: "Local Port", size: "small", fullWidth: true, value: localPort || '', onChange: (e) => onPortInputChange('localPort', e.target.value), type: "number", "aria-valuemin": 0, "aria-valuemax": 65535, disabled: isForwarding || disabled, slotProps: {
+                            htmlInput: {
+                                min: 0,
+                                max: 65535,
+                            },
+                        }, sx: { minWidth: '150px' } })] }), !isForwarding ? (_jsxs(_Fragment, { children: [_jsx(Button, { variant: "contained", color: "primary", onClick: onPortForward, disabled: !podPort || !localPort || isLoading || disabled, fullWidth: true, sx: { mb: isPortInUse ? 1 : 0 }, children: isLoading ? (_jsxs(Box, { sx: { display: 'flex', alignItems: 'center' }, children: [_jsx(CircularProgress, { size: 20, color: "inherit", sx: { mr: 1 } }), statusMessage || 'Loading...'] })) : ('Forward Port') }), isPortInUse && (_jsxs(Box, { sx: { mt: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }, children: [_jsx(Typography, { variant: "body2", color: "error", sx: { mb: 1 }, children: statusMessage }), _jsx(Button, { variant: "outlined", color: "warning", onClick: onForcePortForward, size: "small", startIcon: _jsx(WarningIcon, {}), children: "Kill Process & Force Mapping" })] }))] })) : (_jsx(Button, { variant: "outlined", color: "secondary", onClick: onStopPortForward, fullWidth: true, children: "Stop Forwarding" }))] }));
+};
+export default PortForwardingControls;

@@ -52,6 +52,7 @@ async function updateAppSettings(newSettings) {
     const currentSettings = await loadAppSettings();
     const updatedSettings = {
       ...currentSettings,
+      ...newSettings,
       ...(newSettings.filterPreference !== undefined && { filterPreference: newSettings.filterPreference }),
       ...(newSettings.namespace !== undefined && { namespace: newSettings.namespace }),
       ...(newSettings.refreshInterval !== undefined && { refreshInterval: newSettings.refreshInterval })

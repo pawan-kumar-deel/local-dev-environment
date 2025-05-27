@@ -1,6 +1,33 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { TextField, Button, Box, Typography, Divider, FormControl, InputLabel, Select, MenuItem, type SelectChangeEvent, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText, IconButton, Tooltip, CircularProgress, Backdrop } from '@mui/material';
-import { useAppSettings, updateAppSettingsWithMutate, useTemplates, useConfigurations, saveTemplateWithMutate, applyTemplateWithMutate } from '../services/hooks';
+import React, {useEffect, useRef, useState} from 'react';
+import {
+  Backdrop,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  type SelectChangeEvent,
+  TextField,
+  Tooltip,
+  Typography
+} from '@mui/material';
+import {
+  applyTemplateWithMutate,
+  saveTemplateWithMutate,
+  updateAppSettingsWithMutate,
+  useAppSettings,
+  useConfigurations,
+  useTemplates
+} from '../services/hooks';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -13,7 +40,7 @@ interface NamespaceSelectorProps {
 const NamespaceSelector: React.FC<NamespaceSelectorProps> = ({ onNamespaceChange }) => {
   const { settings, mutate: refreshSettings } = useAppSettings();
   const { templates, mutate: refreshTemplates } = useTemplates();
-  const { configurations, mutate: refreshConfigurations } = useConfigurations();
+  const { mutate: refreshConfigurations } = useConfigurations();
 
   const [namespace, setNamespace] = useState<string>('');
   const [inputValue, setInputValue] = useState<string>('');

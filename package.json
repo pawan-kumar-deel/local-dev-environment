@@ -4,7 +4,8 @@
   "description": "Deel LDE management dashboard with backend API and React UI",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
+    "setup": "npm install && cd ui && npm install",
+    "start": "npm run ui:build && node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "jest",
     "ui:dev": "cd ui && npm run dev",
