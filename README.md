@@ -18,7 +18,7 @@ A full-stack application for managing Deel LDEs, including a Node.js Express.js 
 
 2. Install dependencies:
    ```
-   npm install
+   npm run setup
    ```
 
 ## Usage
