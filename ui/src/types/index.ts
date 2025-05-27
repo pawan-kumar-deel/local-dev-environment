@@ -80,6 +80,7 @@ export interface AppSettings {
   filterPreference: "Services with listeners" | "All services";
   namespace: string;
   refreshInterval?: "5s" | "10s" | "15s" | "30s" | "1m";
+  profile: string;
 }
 
 export interface Template {

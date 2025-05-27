@@ -11,6 +11,7 @@ router.use('/pods', podRoutes);
 router.use('/configurations', configRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/templates', templatesRoutes);
+router.use('/profile', require('./profileRoutes'));
 
 // Special routes for port forwarding
 router.delete('/portforward/:localPort', configController.stopPortForwarding);
@@ -33,7 +34,9 @@ router.get('/', (req, res) => {
       { method: 'GET', path: '/api/templates', description: 'Get all saved templates' },
       { method: 'POST', path: '/api/templates', description: 'Save current port forwarding configuration as a template' },
       { method: 'POST', path: '/api/templates/:name/apply', description: 'Apply a template' },
-      { method: 'DELETE', path: '/api/templates/:name', description: 'Delete a template' }
+      { method: 'DELETE', path: '/api/templates/:name', description: 'Delete a template' },
+        { method: 'GET', path: '/api/templates/:name/download', description: 'Download a template' },
+        { method: 'GET', path: '/api/profile', description: 'Get user profile information' },
     ]
   });
 });
