@@ -8,7 +8,7 @@
 const http = require('http');
 // Configuration
 const API_HOST = 'localhost';
-const API_PORT = 3000;
+const API_PORT = 885;
 const NAMESPACE = 'default'; // Change this to your target namespace
 const POD_NAME = ''; // Change this to a pod name in your namespace
 const POD_PORT = 8080; // Change this to the port your pod exposes

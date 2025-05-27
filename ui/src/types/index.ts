@@ -80,3 +80,9 @@ export interface AppSettings {
   namespace: string;
   refreshInterval?: "5s" | "10s" | "15s" | "30s" | "1m";
 }
+
+export interface Template {
+  name: string;
+  createdAt: string;
+  configurations: PortForwardConfig[];
+}

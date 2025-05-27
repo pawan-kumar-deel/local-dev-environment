@@ -1,37 +1,37 @@
 [
   {
     "namespace": "dev-m93dxcxsa7",
-    "podName": "backend-main-77f7bf64db-p5j8w",
-    "podPort": 3000,
-    "localPort": 3030,
-    "createdAt": "2025-05-20T20:00:24.763Z"
+    "podName": "nats-0",
+    "podPort": 4222,
+    "localPort": 4222,
+    "createdAt": "2025-05-27T07:58:07.636Z"
   },
   {
     "namespace": "dev-m93dxcxsa7",
-    "podName": "admin-7588699df8-d6486",
-    "podPort": 80,
-    "localPort": 3031,
-    "createdAt": "2025-05-20T20:01:42.160Z"
+    "podName": "backend-main-776f87744f-5fx22",
+    "podPort": 3000,
+    "localPort": 3000,
+    "createdAt": "2025-05-27T08:05:26.283Z"
   },
   {
     "namespace": "dev-m93dxcxsa7",
-    "podName": "bank-transfer-5d449d64cd-mprgh",
+    "podName": "payroll-processing-api-6c6d467748-gcztr",
     "podPort": 3000,
-    "localPort": 1111,
-    "createdAt": "2025-05-20T20:10:39.828Z"
+    "localPort": 4000,
+    "createdAt": "2025-05-27T08:07:52.339Z"
   },
   {
     "namespace": "dev-m93dxcxsa7",
-    "podName": "benefits-5b4d88bddb-hl4zk",
+    "podName": "payroll-change-logs-6f699c68fc-845wl",
     "podPort": 3000,
-    "localPort": 1112,
-    "createdAt": "2025-05-20T20:10:50.399Z"
+    "localPort": 5000,
+    "createdAt": "2025-05-27T08:09:37.087Z"
   },
   {
     "namespace": "dev-m93dxcxsa7",
-    "podName": "cdd-6fc58c79bf-2bhwh",
-    "podPort": 3000,
-    "localPort": 3333,
-    "createdAt": "2025-05-20T20:11:30.654Z"
+    "podName": "redis-55647d8b99-46hlf",
+    "podPort": 6379,
+    "localPort": 6379,
+    "createdAt": "2025-05-27T08:10:21.774Z"
   }
 ]

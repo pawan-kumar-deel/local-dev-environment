@@ -34,7 +34,7 @@ For development with auto-restart:
 npm run dev
 ```
 
-The server will start on port 3000 by default. You can change this by setting the PORT environment variable.
+The server will start on port 884 by default. You can change this by setting the PORT environment variable.
 
 ### Start the UI Development Server
 

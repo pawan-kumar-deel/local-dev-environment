@@ -5,7 +5,7 @@ import NamespaceSelector from './NamespaceSelector';
 import PodList from './PodList';
 import { useAppSettings, updateAppSettingsWithMutate } from '../services/hooks';
 
-const DRAWER_WIDTH = 240;
+const DRAWER_WIDTH = 250;
 
 const Dashboard: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div>
+    <div style={{  height: '100vh', width: '70vw' }}>
       <CssBaseline />
       <AppBar position="fixed" color="primary" elevation={0} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
@@ -56,20 +56,20 @@ const Dashboard: React.FC = () => {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Drawer
-        variant="temporary"
-        open={drawerOpen}
-        onClose={toggleDrawer}
-        sx={{
-          display: { xs: 'block', sm: 'none' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ p: 2 }}>
-          <NamespaceSelector onNamespaceChange={handleNamespaceChange} />
-        </Box>
-      </Drawer>
+      {/*<Drawer*/}
+      {/*  variant="temporary"*/}
+      {/*  open={drawerOpen}*/}
+      {/*  onClose={toggleDrawer}*/}
+      {/*  sx={{*/}
+      {/*    display: { xs: 'block', sm: 'none' },*/}
+      {/*    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },*/}
+      {/*  }}*/}
+      {/*>*/}
+      {/*  <Toolbar />*/}
+      {/*  <Box sx={{ p: 2 }}>*/}
+      {/*    <NamespaceSelector onNamespaceChange={handleNamespaceChange} />*/}
+      {/*  </Box>*/}
+      {/*</Drawer>*/}
       <Drawer
         variant="permanent"
         sx={{
@@ -84,7 +84,7 @@ const Dashboard: React.FC = () => {
           <NamespaceSelector onNamespaceChange={handleNamespaceChange} />
         </Box>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: 'auto' }}>
+      <Box component="main" sx={{ flexGrow: 1 }}>
         <Toolbar />
         {namespace && <PodList namespace={namespace} />}
       </Box>

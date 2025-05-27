@@ -31,8 +31,10 @@ interface UsePortForwardingResult {
   handlePortForward: (namespace: string, podName: string) => Promise<void>;
   handleStopPortForward: (podName: string) => Promise<void>;
   handleForcePortForward: (namespace: string, podName: string) => Promise<void>;
+  handleStopAllPortForwards: () => Promise<void>;
   clearActionStatus: (podName: string) => void;
   getPortForwardConfig: (podName: string) => PortForwardConfig | undefined;
+  hasActiveForwards: boolean;
 }
 
 /**
@@ -57,9 +59,8 @@ export const usePortForwarding = (
 
     const configMap: Record<string, PortForwardConfig> = {};
     configurations.forEach(config => {
-      if (config.namespace === namespace) {
-        configMap[config.podName] = config;
-      }
+      // Include all configurations, regardless of namespace
+      configMap[config.podName] = config;
     });
     setPortForwardConfigs(configMap);
 
@@ -76,7 +77,7 @@ export const usePortForwarding = (
       ...prevInputs,
       ...inputs
     }));
-  }, [configurations, namespace]);
+  }, [configurations]);
 
   const handleInputChange = (podName: string, field: 'podPort' | 'localPort', value: string) => {
     setPortInputs(prev => ({
@@ -134,7 +135,7 @@ export const usePortForwarding = (
         podName,
         parseInt(input.podPort),
         localPort,
-        refreshConfigurations
+        () => Promise.resolve() // No-op function that returns a resolved promise
       );
 
       if (result.success) {
@@ -146,6 +147,9 @@ export const usePortForwarding = (
             isLoading: false
           }
         });
+
+        // Refresh configurations to update UI immediately
+        refreshConfigurations();
       } else {
         setActionStatus({
           ...actionStatus,
@@ -196,7 +200,7 @@ export const usePortForwarding = (
         podName,
         parseInt(input.podPort),
         parseInt(input.localPort),
-        refreshConfigurations,
+        () => Promise.resolve(), // No-op function that returns a resolved promise
         true // force = true
       );
 
@@ -209,6 +213,9 @@ export const usePortForwarding = (
             isLoading: false
           }
         });
+
+        // Refresh configurations to update UI immediately
+        refreshConfigurations();
       } else {
         setActionStatus({
           ...actionStatus,
@@ -268,6 +275,30 @@ export const usePortForwarding = (
     return portForwardConfigs[podName];
   };
 
+  const handleStopAllPortForwards = async () => {
+    if (!configurations || configurations.length === 0) return;
+
+    try {
+      // Stop all port forwards one by one
+      const promises = configurations.map(config => 
+        stopPortForwardingWithMutate(config.localPort, refreshConfigurations)
+      );
+
+      await Promise.all(promises);
+
+      // Clear all action statuses
+      setActionStatus({});
+
+      // Refresh configurations to update UI
+      await refreshConfigurations();
+    } catch (err) {
+      console.error('Error stopping all port forwards:', err);
+    }
+  };
+
+  // Check if there are any active forwards
+  const hasActiveForwards = configurations ? configurations.length > 0 : false;
+
   return {
     portInputs,
     actionStatus,
@@ -275,7 +306,9 @@ export const usePortForwarding = (
     handlePortForward,
     handleStopPortForward,
     handleForcePortForward,
+    handleStopAllPortForwards,
     clearActionStatus,
-    getPortForwardConfig
+    getPortForwardConfig,
+    hasActiveForwards
   };
 };
