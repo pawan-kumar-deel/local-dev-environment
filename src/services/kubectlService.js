@@ -1,7 +1,15 @@
 const { executeKubectlCommand } = require('../utils/execUtils');
 const { execPromiseWithOptions } = require('../utils/execUtils');
 const configService = require('./configService');
+const {exec} = require('child_process');
+const { promisify } = require('util');
+const k8s = require('@kubernetes/client-node');
+const kc = new k8s.KubeConfig();
+kc.loadFromDefault();
+const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 
+
+const execAsync = promisify(exec);
 /**
  * Get all services in a namespace
  * @param {string} namespace - The namespace to get services from
@@ -121,6 +129,22 @@ async function findPodsByService(namespace, serviceName, requiredPort = null) {
   }
 }
 
+async function getPodsInNamespace(namespace) {
+  const command = `kubectl get pods -n ${namespace} --chunk-size=5 -o json`;
+  try {
+    const { stdout } = await execAsync(command);
+    return JSON.parse(stdout);
+  } catch (error) {
+    console.error(`Error fetching pods for namespace ${namespace}:`, error);
+    return { items: [] }; // fail gracefully
+  }
+}
+
+async function fetchPodsInParallel(namespaces){
+  const podLists = await Promise.all(namespaces.map(ns => getPodsInNamespace(ns)));
+  return podLists.flatMap(podList => podList.items);
+}
+
 /**
  * Get all pods in a namespace
  * @param {string} namespace - The namespace to get pods from
@@ -129,8 +153,11 @@ async function findPodsByService(namespace, serviceName, requiredPort = null) {
 async function getPods(namespace) {
   // First check if the namespace exists
   try {
-    const namespaceCommand = `kubectl get namespace ${namespace} -o name`;
-    await executeKubectlCommand(namespaceCommand, 2, 500);
+    const res = await k8sApi.readNamespace({name: namespace});
+
+    if (!res.metadata.name) {
+      throw new Error('Namespace not found or malformed response');
+    }
   } catch (nsError) {
     console.error(`Namespace check failed: ${nsError.message}`);
     throw {
@@ -140,10 +167,7 @@ async function getPods(namespace) {
     };
   }
 
-  // If namespace exists, get pods
-  const command = `kubectl get pods -n ${namespace} -o json`;
-  const output = await executeKubectlCommand(command);
-  return JSON.parse(output);
+  return await k8sApi.listNamespacedPod({namespace});
 }
 
 /**
@@ -153,9 +177,8 @@ async function getPods(namespace) {
  * @returns {Promise<object>} - Promise that resolves with pod details
  */
 async function getPodDetails(namespace, podName) {
-  const command = `kubectl get pod ${podName} -n ${namespace} -o json`;
-  const output = await executeKubectlCommand(command);
-  return JSON.parse(output);
+  const res = await k8sApi.readNamespacedPod({name: podName, namespace});
+  return res.body;
 }
 
 /**
@@ -307,13 +330,13 @@ async function startPortForwarding(namespace, podName, podPort, localPort, force
  * @param {number} localPort - The local port to stop forwarding
  * @returns {Promise<object>} - Promise that resolves with success message
  */
-async function stopPortForwarding(localPort) {
+async function stopPortForwarding(localPort, removeConfig = true) {
   // Find and kill the process using the local port
   const command = `lsof -ti:${localPort} | xargs kill -9`;
   await executeKubectlCommand(command);
 
   // Remove the configuration
-  await configService.removeConfiguration(localPort);
+  removeConfig && await configService.removeConfiguration(localPort);
 
   return {
     message: `Port forwarding on local port ${localPort} stopped successfully`
@@ -359,14 +382,14 @@ async function applyConfigurations() {
   try {
     const configurations = await configService.loadConfigurations();
     console.log(`Applying ${configurations.length} port forwarding configurations...`);
-
-    for (const config of configurations) {
+// Parallelize port forwarding for all configurations
+    await Promise.all(configurations.map(async (config) => {
       try {
         // Check if port is already in use
         try {
           await execPromiseWithOptions(`lsof -i:${config.localPort}`);
           console.log(`Local port ${config.localPort} is already in use, skipping...`);
-          continue;
+          return;
         } catch (error) {
           // Port is not in use, which is good
         }
@@ -379,7 +402,7 @@ async function applyConfigurations() {
 
             if (pods.length === 0) {
               console.error(`No pods found for service ${config.serviceName} with port ${config.podPort} in namespace ${config.namespace}`);
-              continue;
+              return;
             }
 
             // Use the first available pod
@@ -415,7 +438,63 @@ async function applyConfigurations() {
       } catch (error) {
         console.error(`Error applying configuration:`, error);
       }
-    }
+    }));
+    // for (const config of configurations) {
+    //   try {
+    //     // Check if port is already in use
+    //     try {
+    //       await execPromiseWithOptions(`lsof -i:${config.localPort}`);
+    //       console.log(`Local port ${config.localPort} is already in use, skipping...`);
+    //       continue;
+    //     } catch (error) {
+    //       // Port is not in use, which is good
+    //     }
+    //
+    //     // If we have a service name, use it to find a suitable pod
+    //     if (config.serviceName) {
+    //       try {
+    //         // Find pods that belong to this service and expose the required port
+    //         const pods = await findPodsByService(config.namespace, config.serviceName, config.podPort);
+    //
+    //         if (pods.length === 0) {
+    //           console.error(`No pods found for service ${config.serviceName} with port ${config.podPort} in namespace ${config.namespace}`);
+    //           continue;
+    //         }
+    //
+    //         // Use the first available pod
+    //         const pod = pods[0];
+    //         const podName = pod.metadata.name;
+    //
+    //         // Start port forwarding in the background
+    //         const command = `kubectl port-forward -n ${config.namespace} pod/${podName} ${config.localPort}:${config.podPort} > /dev/null 2>&1 &`;
+    //         await executeKubectlCommand(command);
+    //         console.log(`Started port forwarding: ${config.namespace}/${config.serviceName} (pod: ${podName}) ${config.localPort}:${config.podPort}`);
+    //       } catch (serviceError) {
+    //         console.error(`Error finding pods for service ${config.serviceName}:`, serviceError);
+    //
+    //         // Fall back to using the saved pod name if available
+    //         if (config.podName) {
+    //           try {
+    //             const command = `kubectl port-forward -n ${config.namespace} pod/${config.podName} ${config.localPort}:${config.podPort} > /dev/null 2>&1 &`;
+    //             await executeKubectlCommand(command);
+    //             console.log(`Fallback: Started port forwarding using saved pod name: ${config.namespace}/${config.podName} ${config.localPort}:${config.podPort}`);
+    //           } catch (podError) {
+    //             console.error(`Error applying configuration using fallback pod ${config.podName}:`, podError);
+    //           }
+    //         }
+    //       }
+    //     } else if (config.podName) {
+    //       // If we don't have a service name but have a pod name, use it directly
+    //       const command = `kubectl port-forward -n ${config.namespace} pod/${config.podName} ${config.localPort}:${config.podPort} > /dev/null 2>&1 &`;
+    //       await executeKubectlCommand(command);
+    //       console.log(`Started port forwarding: ${config.namespace}/${config.podName} ${config.localPort}:${config.podPort}`);
+    //     } else {
+    //       console.error(`Configuration missing both serviceName and podName: ${JSON.stringify(config)}`);
+    //     }
+    //   } catch (error) {
+    //     console.error(`Error applying configuration:`, error);
+    //   }
+    // }
   } catch (error) {
     console.error('Error applying configurations:', error);
   }

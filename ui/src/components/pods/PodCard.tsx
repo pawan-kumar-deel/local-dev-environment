@@ -1,22 +1,8 @@
-import React, { useState } from 'react';
-import {
-  Box,
-  Grid,
-  Alert,
-  Card,
-  CardContent,
-  CardActions,
-  Typography,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
+import React from 'react';
+import {Alert, Box, Card, CardActions, CardContent, Typography,} from '@mui/material';
 import PortForwardingControls from './PortForwardingControls';
 import PodHeader from './PodHeader';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import TerminalIcon from '@mui/icons-material/Terminal';
-import CodeIcon from '@mui/icons-material/Code';
-import type { Pod, PortForwardConfig } from '../../types';
+import type {Pod, PortForwardConfig} from '../../types';
 
 interface PodCardProps {
   pod: Pod;
@@ -106,7 +92,7 @@ const PodCard: React.FC<PodCardProps> = ({
         {portForwardConfig && (
           <Box sx={{ mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
             <Typography variant="body2">
-              <strong>Active Port Forwarding:</strong> {portForwardConfig.podPort} → localhost:
+              <strong>Active port forwarding:</strong> {portForwardConfig.podPort} → localhost:
               {portForwardConfig.localPort}
               {currentNamespace && portForwardConfig.namespace !== currentNamespace && (
                 <span> <strong>({portForwardConfig.namespace || 'giger'})</strong></span>

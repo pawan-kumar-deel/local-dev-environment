@@ -187,11 +187,12 @@ const NamespaceSelector: React.FC<NamespaceSelectorProps> = ({ onNamespaceChange
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e?.preventDefault?.();
     if (inputValue.trim()) {
       setNamespace(inputValue);
       onNamespaceChange(inputValue);
     }
+    window.location.reload();
   };
 
   return (
@@ -214,6 +215,7 @@ const NamespaceSelector: React.FC<NamespaceSelectorProps> = ({ onNamespaceChange
           variant="contained" 
           color="primary"
           fullWidth
+          onClick={handleSubmit}
         >
           Change
         </Button>
@@ -247,7 +249,7 @@ const NamespaceSelector: React.FC<NamespaceSelectorProps> = ({ onNamespaceChange
               label="Select Template"
             >
               <MenuItem value="">
-                <em>None</em>
+                <em>Create or Upload</em>
               </MenuItem>
               {templates?.map((template) => (
                 <MenuItem key={template.name} value={template.name}>

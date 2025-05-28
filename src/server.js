@@ -24,15 +24,17 @@ async function startServer() {
         const configurations = await configService.loadConfigurations();
         console.log(`Stopping ${configurations.length} active port forwardings...`);
 
-        // Stop all port forwardings
-        for (const config of configurations) {
-          try {
-            await kubectlService.stopPortForwarding(config.localPort);
-            console.log(`Stopped port forwarding on local port ${config.localPort}`);
-          } catch (error) {
-            console.error(`Error stopping port forwarding on port ${config.localPort}:`, error);
-          }
-        }
+        // Stop all port forwardings in parallel
+        await Promise.all(
+            configurations.map(async (config) => {
+              try {
+                await kubectlService.stopPortForwarding(config.localPort, false);
+                console.log(`Stopped port forwarding on local port ${config.localPort}`);
+              } catch (error) {
+                console.error(`Error stopping port forwarding on port ${config.localPort}:`, error);
+              }
+            })
+        );
 
         // Close the server
         server.close(() => {
