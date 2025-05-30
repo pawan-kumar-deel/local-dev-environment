@@ -3,13 +3,14 @@ const { PORT } = require('./config/constants');
 const kubectlService = require('./services/kubectlService');
 const configService = require('./services/configService');
 
-// Start the server
-async function startServer() {
+(async function startServer() {
   try {
-    const server = app.listen(PORT, () => {
+    const server = app.listen(PORT, async () => {
       console.log(`Server is running on port ${PORT}`);
       console.log(`Access the web interface at http://localhost:${PORT}`);
       console.log(`Access the API documentation at http://localhost:${PORT}/api`);
+      const open = (await import('open')).default;
+      open(`http://localhost:${PORT}`);
     });
 
     // Apply saved port forwarding configurations
@@ -50,7 +51,4 @@ async function startServer() {
     console.error('Error starting server:', error);
     process.exit(1);
   }
-}
-
-// Start the server
-startServer();
+})();
