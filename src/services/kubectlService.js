@@ -356,10 +356,10 @@ async function executeCommand(namespace, podName, command, containerName) {
 
   if (containerName) {
     // If container name is provided, use it
-    kubectlCommand = `kubectl exec -n ${namespace} ${podName} -c ${containerName} -- sh -c '${command}'`;
+    kubectlCommand = `kubectl exec -n ${namespace} ${podName} -c ${containerName} -- sh -c '${command.replace(/'/g, `'\\''`)}'`;
   } else {
     // Otherwise, let kubectl choose the default container
-    kubectlCommand = `kubectl exec -n ${namespace} ${podName} -- sh -c '${command}'`;
+    kubectlCommand = `kubectl exec -n ${namespace} ${podName} -- sh -c '${command.replace(/'/g, `'\\''`)}'`;
   }
 
   const output = await executeKubectlCommand(kubectlCommand);
