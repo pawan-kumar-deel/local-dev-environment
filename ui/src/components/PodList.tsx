@@ -1,34 +1,29 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { 
-  Typography,
-  Box,
-  CircularProgress,
+import React, {useEffect, useRef, useState} from 'react';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
+  Backdrop,
+  Box,
   Card,
   CardContent,
-  Select,
-  MenuItem,
+  CircularProgress,
   FormControl,
-  InputLabel,
-  IconButton,
-  Tooltip,
   Grid,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Backdrop,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
   type SelectChangeEvent,
+  Tooltip,
+  Typography,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import StopIcon from '@mui/icons-material/Stop';
-import type { Pod } from '../types';
-import { 
-  usePods,
-  useConfigurations,
-  useAppSettings,
-  updateAppSettingsWithMutate
-} from '../services/hooks';
+import type {Pod} from '../types';
+import {updateAppSettingsWithMutate, useAppSettings, useConfigurations, usePods} from '../services/hooks';
 
 // Import custom components
 import PodCard from './pods/PodCard';
@@ -38,11 +33,11 @@ import PrintEnvPopover from './pods/PrintEnvPopover';
 import ConfirmationPopover from './common/ConfirmationPopover';
 
 // Import custom hooks
-import { usePodFiltering } from '../hooks/usePodFiltering';
-import { usePortForwarding } from '../hooks/usePortForwarding';
-import { useTerminalCommands } from '../hooks/useTerminalCommands';
-import { useEnvironmentVariables } from '../hooks/useEnvironmentVariables';
-import { usePrintEnv } from '../hooks/usePrintEnv';
+import {usePodFiltering} from '../hooks/usePodFiltering';
+import {usePortForwarding} from '../hooks/usePortForwarding';
+import {useTerminalCommands} from '../hooks/useTerminalCommands';
+import {useEnvironmentVariables} from '../hooks/useEnvironmentVariables';
+import {usePrintEnv} from '../hooks/usePrintEnv';
 
 interface PodListProps {
   namespace: string;
@@ -57,6 +52,7 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
   // State for stop all confirmation popover and loading state
   const [stopAllAnchorEl, setStopAllAnchorEl] = useState<HTMLElement | null>(null);
   const [isStoppingAllForwards, setIsStoppingAllForwards] = useState<boolean>(false);
+  const [isLoadingEnvVars, setIsLoadingEnvVars] = useState<boolean>(false);
 
   // Use custom hooks for state management
   const { filteredPods, filterPreference, setFilterPreference } = usePodFiltering(allPods, settings?.filterPreference);

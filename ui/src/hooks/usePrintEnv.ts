@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import type { Pod } from '../types';
+import {useState} from 'react';
+import type {Pod} from '../types';
 import type {EnvVar} from './useEnvironmentVariables';
 
 interface UsePrintEnvResult {

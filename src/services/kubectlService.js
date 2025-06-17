@@ -275,6 +275,7 @@ async function startPortForwarding(namespace, podName, podPort, localPort, force
 
     // Save the configuration with pod name but without service name
     const config = {
+      serviceName,
       namespace,
       podName,
       podPort: parseInt(podPort),
@@ -304,7 +305,6 @@ async function startPortForwarding(namespace, podName, podPort, localPort, force
   const config = {
     namespace,
     serviceName,
-    podName,
     podPort: parseInt(podPort),
     localPort: parseInt(localPort),
     createdAt: new Date().toISOString()
