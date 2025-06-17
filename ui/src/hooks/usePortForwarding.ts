@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import type { Pod, PortForwardConfig } from '../types';
-import { 
-  startPortForwardingWithMutate, 
-  stopPortForwardingWithMutate,
+import {useEffect, useState} from 'react';
+import type {PortForwardConfig} from '../types';
+import {
   checkPortAvailabilityWithMutate,
-  type PortAvailabilityResult
+  type PortAvailabilityResult,
+  startPortForwardingWithMutate,
+  stopPortForwardingWithMutate
 } from '../services/hooks';
 
 interface PortInput {
@@ -61,7 +61,7 @@ export const usePortForwarding = (
     configurations.forEach(config => {
       // Include all configurations, regardless of namespace
       // Use podName as the key for backward compatibility
-      configMap[config.podName] = config;
+      configMap[config.serviceName ?? config.podName] = config;
     });
     setPortForwardConfigs(configMap);
 

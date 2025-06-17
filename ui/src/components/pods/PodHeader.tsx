@@ -1,16 +1,10 @@
 import React from 'react';
-import {
-  Typography,
-  Chip,
-  Box,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
+import {Box, Chip, IconButton, Tooltip, Typography,} from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import CodeIcon from '@mui/icons-material/Code';
-import type { Pod } from '../../types';
+import type {Pod} from '../../types';
 
 interface PodHeaderProps {
   pod: Pod;

@@ -80,15 +80,6 @@ const PodCard: React.FC<PodCardProps> = ({
           onTerminalClick={onTerminalClick}
           datadogLink={getDatadogLink()}
         />
-
-        {/*<Typography variant="body2" color="text.secondary" gutterBottom>*/}
-        {/*  <strong>Pod Name:</strong> {pod.metadata.name}*/}
-        {/*</Typography>*/}
-
-        {/*<Typography variant="body2" color="text.secondary" gutterBottom>*/}
-        {/*  <strong>Exposed Ports:</strong> {exposedPorts.length > 0 ? exposedPorts.join(', ') : 'None'}*/}
-        {/*</Typography>*/}
-
         {portForwardConfig && (
           <Box sx={{ mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
             <Typography variant="body2">

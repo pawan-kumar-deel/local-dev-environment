@@ -184,7 +184,8 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
     // First, add all pods from the current namespace to the appropriate array
     if (filteredPods) {
       filteredPods.forEach(pod => {
-        if (getPortForwardConfig(pod.metadata.name)) {
+        if (getPortForwardConfig(pod.metadata.labels?.app ?? pod.metadata.name)) {
+          pod.metadata.name = pod.metadata.labels?.app ?? pod.metadata.name;
           activeForwards.push(pod);
         } else {
           available.push(pod);
@@ -209,29 +210,29 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
           // Use the actual pod if found
           activeForwards.push(actualPod);
         } else {
-          // Create a dummy pod object for this active forward as fallback
-          const dummyPod: Pod = {
-            metadata: {
-              name: config.podName,
-              namespace: config.namespace,
-              uid: `dummy-${config.podName}`,
-              creationTimestamp: config.createdAt,
-              labels: {}
-            },
-            spec: {
-              containers: [{
-                name: 'dummy-container',
-                image: 'dummy-image'
-              }]
-            },
-            status: {
-              phase: 'Unknown',
-              conditions: []
-            }
-          };
-
-          // Add the dummy pod to the activeForwards array
-          activeForwards.push(dummyPod);
+          // // Create a dummy pod object for this active forward as fallback
+          // const dummyPod: Pod = {
+          //   metadata: {
+          //     name: config.podName,
+          //     namespace: config.namespace,
+          //     uid: `dummy-${config.podName}`,
+          //     creationTimestamp: config.createdAt,
+          //     labels: {}
+          //   },
+          //   spec: {
+          //     containers: [{
+          //       name: 'dummy-container',
+          //       image: 'dummy-image'
+          //     }]
+          //   },
+          //   status: {
+          //     phase: 'Unknown',
+          //     conditions: []
+          //   }
+          // };
+          //
+          // // Add the dummy pod to the activeForwards array
+          // activeForwards.push(dummyPod);
         }
       });
     }
@@ -241,6 +242,8 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
 
   // Always get active forwards and available pods
   const { activeForwards, available } = separatePods();
+
+  console.log({ activeForwards, available });
 
   // Render main content
   const mainContent = (
