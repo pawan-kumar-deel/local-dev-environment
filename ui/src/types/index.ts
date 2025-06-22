@@ -7,6 +7,7 @@ export interface Pod {
     labels?: {
       [key: string]: string;
     };
+    generateName: string;
   };
   spec: {
     containers: {
@@ -61,6 +62,7 @@ export interface Pod {
       };
     }[];
   };
+  activeConfig?: PortForwardConfig
 }
 
 export interface PodList {

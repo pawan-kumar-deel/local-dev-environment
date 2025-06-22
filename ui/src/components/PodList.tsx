@@ -186,6 +186,7 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
       filteredPods.forEach(pod => {
         if (getPortForwardConfig(pod.metadata.labels?.app ?? pod.metadata.name)) {
           pod.metadata.name = pod.metadata.labels?.app ?? pod.metadata.name;
+          pod.activeConfig = getPortForwardConfig(pod.metadata.labels?.app ?? pod.metadata.name);
           activeForwards.push(pod);
         } else {
           available.push(pod);
@@ -242,8 +243,6 @@ const PodList: React.FC<PodListProps> = ({ namespace }) => {
 
   // Always get active forwards and available pods
   const { activeForwards, available } = separatePods();
-
-  console.log({ activeForwards, available });
 
   // Render main content
   const mainContent = (

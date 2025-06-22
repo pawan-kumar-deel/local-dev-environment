@@ -37,7 +37,7 @@
   {
     "serviceName": "payroll-change-logs",
     "podPort": 3000,
-    "localPort": 5000,
+    "localPort": 5001,
     "createdAt": "2025-05-27T10:42:41.986Z",
     "namespace": "dev-et1hb4u1xi"
   },

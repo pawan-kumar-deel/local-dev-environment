@@ -1,6 +1,6 @@
 {
-  "name": "PDSH_full_v1",
-  "createdAt": "2025-06-08T17:54:41.056Z",
+  "name": "payroll-data-sync-hub.tmpl",
+  "createdAt": "2025-06-17T12:43:00.033Z",
   "configurations": [
     {
       "serviceName": "backend-main",

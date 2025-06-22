@@ -69,6 +69,7 @@ export const usePrintEnv = (): UsePrintEnvResult => {
         });
       }
     });
+    // console.log(execCommand())
 
     setAllEnvVars(envVars);
     setPrintEnvOutput(envVars);
